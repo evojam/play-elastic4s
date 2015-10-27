@@ -1,0 +1,5 @@
+.cache/
+target/
+project/plugins/project/
+.idea
+.worksheet

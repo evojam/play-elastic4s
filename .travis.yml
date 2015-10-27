@@ -1,0 +1,12 @@
+language: scala
+scala:
+  - 2.10.4
+  - 2.11.1
+  - 2.11.7
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION scoverage:test coveralls
+jdk:
+  - oraclejdk8
+notifications:
+  email:
+    - artur@evojam.com
