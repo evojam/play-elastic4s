@@ -1,6 +1,6 @@
 package com.evojam.play.elastic4s
 
-import play.api.inject.Module
+import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment, Logger}
 
 import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
@@ -33,8 +33,8 @@ class Elastic4sModule extends Module {
       .build()
   }
 
-  def buildSetup(in: Configuration) =
-    in.keys.flatMap(name => in.getConfig(name).map(name -> _)).toSeq.map {
+  def buildSetup(in: Configuration): Seq[InstanceSetup] =
+    in.subKeys.flatMap(name => in.getConfig(name).map(name -> _)).toSeq.map {
       case (name, config) =>
         logger.info(s"Provide ElasticClient with configuration name=$name")
         InstanceSetup(name, settings(config), uri(config), config.getBoolean("default").getOrElse(false))
@@ -52,7 +52,7 @@ class Elastic4sModule extends Module {
     else
       namedBinding(setup.name, instance) :: Nil
 
-  def bindings(setup: InstanceSetup) =
+  def bindings(setup: InstanceSetup): Seq[Binding[_]] =
     bindings(ElasticClient.remote(setup.settings, setup.uri), setup)
 
   override def bindings(environment: Environment, configuration: Configuration) = {
@@ -66,6 +66,6 @@ class Elastic4sModule extends Module {
       throw new Elastic4sConfigException("Cannot bind multiple default instances of ElasticClient")
     }
 
-    instancesSetup.map(bindings)
+    instancesSetup.flatMap(bindings)
   }
 }
