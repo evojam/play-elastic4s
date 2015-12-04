@@ -47,10 +47,11 @@ class Elastic4sModule extends Module {
     bind[ElasticClient].toInstance(instance)
 
   def bindings(instance: ElasticClient, setup: InstanceSetup) =
-    if(setup.default)
+    if (setup.default) {
       namedBinding(setup.name, instance) :: defaultBinding(instance) :: Nil
-    else
+    } else {
       namedBinding(setup.name, instance) :: Nil
+    }
 
   def bindings(setup: InstanceSetup): Seq[Binding[_]] =
     bindings(ElasticClient.remote(setup.settings, setup.uri), setup)
@@ -62,7 +63,7 @@ class Elastic4sModule extends Module {
 
     val instancesSetup = buildSetup(elastic4sConfiguration)
 
-    if(instancesSetup.count(_.default == true) > 1) {
+    if (instancesSetup.count(_.default == true) > 1) {
       throw new Elastic4sConfigException("Cannot bind multiple default instances of ElasticClient")
     }
 
