@@ -1,12 +1,13 @@
 package com.evojam.play.elastic4s
 
+import org.elasticsearch.common.settings.loader.JsonSettingsLoader
+import org.elasticsearch.common.settings.{ImmutableSettings, Settings}
+
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment, Logger}
 
 import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import com.typesafe.config.ConfigRenderOptions
-import org.elasticsearch.common.settings.loader.JsonSettingsLoader
-import org.elasticsearch.common.settings.{ImmutableSettings, Settings}
 
 class Elastic4sConfigException(msg: String) extends Exception(msg: String)
 
