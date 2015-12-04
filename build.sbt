@@ -2,6 +2,8 @@ scalaVersion := "2.11.7"
 
 crossScalaVersions := Seq("2.11.1", "2.11.4", "2.11.7")
 
+organization := "com.evojam"
+
 scalacOptions ++= Seq(
   "-target:jvm-1.8",
   "-encoding", "UTF-8",
@@ -15,7 +17,7 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code"
 )
 
-licenses +=("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
 resolvers ++= Seq(
   Resolver.mavenLocal,
@@ -29,6 +31,7 @@ resolvers ++= Seq(
 val PlayVersion = "2.4.3"
 
 libraryDependencies ++= Seq(
+  "org.specs2" %% "specs2-core" % "2.4.11" % "test",
   "com.typesafe.play" % "play_2.11" % PlayVersion,
   "com.typesafe.play" % "play-json_2.11" % PlayVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4"
