@@ -1,13 +1,13 @@
 package com.evojam.play.elastic4s.core.search
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.libs.json.{Json, Reads}
 
 import org.elasticsearch.action.search.SearchResponse
 
-import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.{ElasticClient, SearchDefinition}
+import com.sksamuel.elastic4s.ElasticDsl._
 
 final case class PreparedSearch(searchDefinition: SearchDefinition, underlying: ElasticClient) {
 
