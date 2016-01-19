@@ -1,19 +1,20 @@
 package com.evojam.play.elastic4s.client
 
-import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.Future.successful
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
-
-import org.elasticsearch.action.ActionResponse
-import org.elasticsearch.action.search.SearchResponse
 
 import play.api.Logger
 import play.api.libs.json._
+
+import org.elasticsearch.action.ActionResponse
 
 import com.google.inject.Inject
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.source.DocumentSource
 import com.sksamuel.elastic4s.{ElasticClient, SearchDefinition}
+
+import com.evojam.play.elastic4s.core.search.PreparedSearch
 
 class ElasticSearchClient @Inject() (val underlying: ElasticClient) {
 
@@ -40,13 +41,29 @@ class ElasticSearchClient @Inject() (val underlying: ElasticClient) {
     }
 
   /**
-   * Execute a search definition
+   * Builds a SearchBuilder using the provided SearchDefinition that can be executed using the `SearchBuilder.collect`
+   * method
    *
-   * @param searchDef the search definition to execute
-   * @return SearchResponse received from ElasticSearch
+   * @param searchDef the search definition to wrap
+   * @return SearchBuilder that encapsulates the SearchDefinition provided
+   *
+   * {{
+   * import play.api.libs.Json
+   *
+   * case class City(name: String, population: Long)
+   * object City {
+   *   implicit val format = Json.format[City]
+   * }
+   *
+   * val myQuery: SearchDefinition = search in "places" -> "cities" query "London"
+   *
+   * val result: Future[List[City]] =
+   *   search(myQuery)
+   *     .collect[City]
+   * }}
    */
-  def search(searchDef: SearchDefinition)(implicit exc: ExecutionContext): Future[SearchResponse] =
-    underlying.execute(searchDef)
+  def search(searchDef: SearchDefinition)(implicit exc: ExecutionContext): PreparedSearch =
+    PreparedSearch(searchDef, underlying)
 
   /**
    * Index a document

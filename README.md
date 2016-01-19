@@ -28,7 +28,11 @@ Then inject where needed, e.g:
     import com.google.inject.Inject
 
     class SearchDao @Inject() (elastic: ElasticSearchClient) {
-        ...
+
+        def search(query: SearchDefinition): Future[List[MyRecord]] =
+            elastic.search(query)
+                .collect[MyRecord]
+
     }
 
 Note, you may access the underlying `ElasticClient` from `com.sksamuel.elastic4s.ElasticClient` if needed
