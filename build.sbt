@@ -31,7 +31,8 @@ resolvers ++= Seq(
 val PlayVersion = "2.4.3"
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "2.4.11" % "test",
+  "org.specs2" %% "specs2-core" % "3.7" % "test",
+  "org.specs2" %% "specs2-mock" % "3.7" % "test",
   "com.typesafe.play" % "play_2.11" % PlayVersion,
   "com.typesafe.play" % "play-json_2.11" % PlayVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4"

@@ -25,7 +25,7 @@ trait ElasticSearchClient {
    * @tparam T type of the document, must have an implicit Writes[T] available in scope
    * @return Future[Boolean] resolved with `true` if the operation succeeded
    */
-  def upsert[T: Writes](indexName: String, doctype: String, id: String, doc: T)
+  def index[T: Writes](indexName: String, doctype: String, id: String, doc: T)
       (implicit exc: ExecutionContext): Future[Boolean]
 
   /**

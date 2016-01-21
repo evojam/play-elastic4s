@@ -1,7 +1,6 @@
 package com.evojam.play.elastic4s.client
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.Future.successful
 import scala.language.implicitConversions
 
 import play.api.Logger
@@ -12,7 +11,7 @@ import org.elasticsearch.action.index.IndexResponse
 
 import com.google.inject.Inject
 import com.sksamuel.elastic4s.{ElasticClient, SearchDefinition}
-import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, _}
 import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
@@ -43,11 +42,11 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
    * @param exc the concurrent execution context
    * @return
    */
-  private def executeUpsert(indexName: String, doctype: String, id: String, in: DocumentSource)
+  private def executeIndex(indexName: String, doctype: String, id: String, in: DocumentSource)
       (implicit exc: ExecutionContext): Future[Option[IndexResponse]] =
     client.execute {
       logger.debug(s"Index into index=$indexName type=$doctype doc=${in.json}")
-      index.into(indexName -> doctype)
+      elastic4sindex.into(indexName -> doctype)
         .doc(in)
         .id(id)
     } map Option.apply
@@ -56,7 +55,7 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
     PreparedSearch(searchDef, client)
 
 
-  def upsert[T: Writes](indexName: String, doctype: String, id: String, doc: T)
+  def index[T: Writes](indexName: String, doctype: String, id: String, doc: T)
       (implicit exc: ExecutionContext): Future[Boolean] = {
     require(indexName != null, "indexName cannot be null")
     require(doctype != null, "doctype cannot be null")
@@ -65,7 +64,7 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
 
     Json.toJson(doc) match {
       case json: JsObject =>
-        executeUpsert(indexName, doctype, id, JsonDocumentSource(Json.stringify(json))).map {
+        executeIndex(indexName, doctype, id, JsonDocumentSource(Json.stringify(json))).map {
           case Some(response) if response.isCreated =>
             logger.info("Document has been indexed (create), retrieving headers= " + getHeaderString(response))
             true
