@@ -21,11 +21,28 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
 
   private[this] val logger = Logger(getClass)
 
-  private def getHeaders[R <: ActionResponse](response: R) =
+  /**
+   * Extracts headers from ES response for logging purposes.
+   * @param response ElasticSearch response
+   * @return String with response headers or "&lt;null&gt;"
+   */
+  private def getHeaderString[R <: ActionResponse](response: R) =
     Option(response.getHeaders)
       .map(_.toString)
       .getOrElse("<null>")
 
+  /**
+   * Executes an index operation via the underlying ES client.
+   *
+   * If a document with the same id already exists, it will be overwritten.
+   *
+   * @param indexName name of the ES index
+   * @param doctype type of ES document to be indexed
+   * @param id id of the document
+   * @param in the document to be indexed
+   * @param exc the concurrent execution context
+   * @return
+   */
   private def executeUpsert(indexName: String, doctype: String, id: String, in: DocumentSource)
       (implicit exc: ExecutionContext): Future[Option[IndexResponse]] =
     client.execute {
@@ -50,10 +67,10 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
       case json: JsObject =>
         executeUpsert(indexName, doctype, id, JsonDocumentSource(Json.stringify(json))).map {
           case Some(response) if response.isCreated =>
-            logger.info("Document has been indexed (create), retrieving headers= " + getHeaders(response))
+            logger.info("Document has been indexed (create), retrieving headers= " + getHeaderString(response))
             true
           case Some(response) if !response.isCreated =>
-            logger.info("Document has been indexed (update), retrieving headers= " + getHeaders(response))
+            logger.info("Document has been indexed (update), retrieving headers= " + getHeaderString(response))
             true
           case None =>
             logger.error("Elastic execute result IndexResponse is null, I treat it as an error but can do nothing")
@@ -61,12 +78,19 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
         }
       case _ =>
         logger.error("Refuse to index document that is not a JsObject")
-        successful(false)
+        throw NotAJsObjectException(doc)
     }
   }
 
 
-  private def executeRemove(indexName: String, doctype: String, id: String)(implicit exc: ExecutionContext) =
+  /**
+   * Executes a remove operation via the underlying ES client.
+   * @param indexName ES index name
+   * @param doctype ES document type
+   * @param id id of the document that should be removed
+   * @return
+   */
+  private def executeRemove(indexName: String, doctype: String, id: String) =
     client.execute {
       logger.debug(s"Remove document from index=$indexName type=$doctype id=$id")
       delete
@@ -74,7 +98,7 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
         .from(indexName -> doctype)
     }
 
-  override def remove(indexName: String, doctype: String, id: String)
+  def remove(indexName: String, doctype: String, id: String)
       (implicit exc: ExecutionContext): Future[Boolean] = {
     require(indexName != null, "indexName cannot be null")
     require(doctype != null, "doctype cannot be null")
@@ -88,3 +112,5 @@ class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends Elas
     }
   }
 }
+
+case class NotAJsObjectException[A : Writes](doc: A) extends Exception(s"Document ${doc.toString} is not a JSON object")
