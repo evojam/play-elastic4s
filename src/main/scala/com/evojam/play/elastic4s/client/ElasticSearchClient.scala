@@ -6,6 +6,9 @@ import play.api.libs.json.Writes
 
 import com.sksamuel.elastic4s.SearchDefinition
 
+import org.elasticsearch.action.bulk.BulkResponse
+
+
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
 trait ElasticSearchClient {
@@ -25,8 +28,24 @@ trait ElasticSearchClient {
    * @tparam T type of the document, must have an implicit Writes[T] available in scope
    * @return Future[Boolean] resolved with `true` if the operation succeeded
    */
+  @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
   def index[T: Writes](indexName: String, doctype: String, id: String, doc: T)
       (implicit exc: ExecutionContext): Future[Boolean]
+
+  /**
+   * Indexes a document, assigning a new id.
+   *
+   * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html]]
+   *
+   * @param indexName name of the index
+   * @param doctype type of the document
+   * @param doc document contents
+   * @param exc execution context
+   * @tparam T type of the document with Writes[T] in implicit scope
+   * @return Future[Boolean] resolved with `true` if the operation succeeded
+   */
+  @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
+  def index[T: Writes](indexName: String, doctype: String, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
 
   /**
    * Removes a document with the given ID.
@@ -62,4 +81,22 @@ trait ElasticSearchClient {
    * }}}
    */
   def search(searchDef: SearchDefinition): PreparedSearch
+
+  /**
+   * Indexes multiple documents into a single index using ES Bulk API.
+   *
+   * It is possible that only a subset of the documents will be indexed properly - ES will simply
+   * accept all the valid documents and drop the malformed ones. Inspect the resulting
+   * [[org.elasticsearch.action.bulk.BulkResponse]] for details on which documents were indexed successfully.
+   *
+   * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html]]
+   *
+   * @param indexName name of the index
+   * @param doctype type of the documents
+   * @param documents documents to be indexed
+   * @tparam T type of the documents with Writes[T] available in the implicit scope
+   * @return the original response from ES
+   */
+  @throws[NotAJsObjectException[_]]("if some of the documents serialize to something that is not a Json object")
+  def bulkInsert[T: Writes](indexName: String, doctype: String, documents: Iterable[T]): Future[BulkResponse]
 }
