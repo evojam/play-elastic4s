@@ -26,13 +26,25 @@ libraryDependencies += "com.evojam" % "play-elastic4s_2.11" % "0.1.0-SNAPSHOT"
 
 ## Usage
 
-Provide ES configuration and enable this module in `application.conf`
+Provide ES configuration and enable this module in `application.conf`. You may list multiple Elasticsearch client
+configuration blocks, and multiple index definitions in the indexTypes block. They will be available for injection
+with the @Named annotation, as shown in the example below.
 
     elastic4s {
         myCluster {
            default: true
-           uri: elasticsearch://host:port
+           uri: "elasticsearch://host:port"
            cluster.name: "mycluster"
+        }
+        indexTypes {
+            myIndex {
+                index: "myIndexName"
+                type: "myDocType"
+            }
+            otherIndex {
+                index: "otherIndexName"
+                type: "otherDocType"
+            }
         }
     }
 
@@ -40,14 +52,20 @@ Provide ES configuration and enable this module in `application.conf`
 
 Then inject where needed, e.g:
 
-    import com.evojam.play.elastic4s.client.ElasticSearchClient
-    import com.google.inject.Inject
+    import javax.inject.Inject
+    import javax.inject.Named
 
-    class SearchDao @Inject() (elastic: ElasticSearchClient) {
+    import com.evojam.play.elastic4s.client.ElasticSearchClient
+    import com.sksamuel.elastic4s.IndexType
+
+    class MyClass @Inject() (elastic: ElasticSearchClient, @Named("myIndex") myIndex: IndexType) {
 
         def search(query: SearchDefinition): Future[List[MyRecord]] =
             elastic.search(query)
                 .collect[MyRecord]
+
+        def index(doc: MyRecord): Future[Boolean] =
+            elastic.index(myIndex, doc)
 
     }
 
