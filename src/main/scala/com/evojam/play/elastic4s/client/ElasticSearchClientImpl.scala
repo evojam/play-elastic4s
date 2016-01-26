@@ -17,7 +17,7 @@ import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
-class ElasticSearchClientImpl @Inject() (val client: ElasticClient) extends ElasticSearchClient {
+class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchClient {
 
   private[this] val logger = Logger(getClass)
 

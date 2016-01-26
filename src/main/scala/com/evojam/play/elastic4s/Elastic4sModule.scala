@@ -1,98 +1,61 @@
 package com.evojam.play.elastic4s
 
-import org.elasticsearch.common.settings.loader.JsonSettingsLoader
-import org.elasticsearch.common.settings.{ImmutableSettings, Settings}
-
-import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment, Logger}
+import play.api.inject.{Binding, Module}
 
-import com.sksamuel.elastic4s.{IndexType, ElasticClient, ElasticsearchClientUri}
-import com.typesafe.config.ConfigRenderOptions
+import com.sksamuel.elastic4s.{ElasticClient, IndexType}
+
+import com.evojam.play.elastic4s.client.{ElasticSearchClient, ElasticSearchClientImpl}
+import com.evojam.play.elastic4s.configuration.{IndexTypeConfigurationLoader, ClusterConfigurationLoader, ClusterSetup}
 
 class Elastic4sConfigException(msg: String) extends Exception(msg: String)
 
 class Elastic4sModule extends Module {
 
-  case class InstanceSetup(name: String, settings: Settings, uri: ElasticsearchClientUri, default: Boolean)
-
   val logger = Logger(getClass)
 
   val ConfigurationKey = "elastic4s"
-  val IndexTypesKey = "indexTypes"
-  val UriKey = "uri"
 
-  def uri(config: Configuration) = config.getString(UriKey)
-    .map(ElasticsearchClientUri(_))
-    .getOrElse(throw new Elastic4sConfigException("Configuration field uri is mandatory"))
-
-  def settings(config: Configuration): Settings = {
-
-    val loader = new JsonSettingsLoader() // Workaround to avoid code dups
-
-    ImmutableSettings.settingsBuilder()
-      .put("client.transport.sniff", true) // Default behaviour for us
-      .put(loader.load(config.underlying.root().render(ConfigRenderOptions.concise())))
-      .build()
-  }
-
-  def buildSetup(in: Configuration): Seq[InstanceSetup] =
-    in.subKeys.filterNot(_ == IndexTypesKey).flatMap(name => in.getConfig(name).map(name -> _)).toSeq.map {
-      case (name, config) =>
-        logger.info(s"Provide ElasticClient with configuration name=$name")
-        InstanceSetup(name, settings(config), uri(config), config.getBoolean("default").getOrElse(false))
-    }
+  def buildSetup(in: Configuration): Seq[ClusterSetup] =
+    in.subKeys
+      .filterNot(_ == IndexTypeConfigurationLoader.IndexTypesKey)
+      .toSeq
+      .map(ClusterConfigurationLoader.clusterSetup(in))
 
   def namedBinding(name: String, instance: ElasticClient) =
-    bind[ElasticClient].qualifiedWith(name).toInstance(instance)
+    bind[ElasticSearchClient].qualifiedWith(name).toInstance(new ElasticSearchClientImpl(instance))
 
   def defaultBinding(instance: ElasticClient) =
-    bind[ElasticClient].toInstance(instance)
+    bind[ElasticSearchClient].toInstance(new ElasticSearchClientImpl(instance))
 
-  def bindings(instance: ElasticClient, setup: InstanceSetup) =
+  def bindings(instance: ElasticClient, setup: ClusterSetup) =
     if (setup.default) {
       namedBinding(setup.name, instance) :: defaultBinding(instance) :: Nil
     } else {
       namedBinding(setup.name, instance) :: Nil
     }
 
-  def bindings(setup: InstanceSetup): Seq[Binding[_]] =
+  def bindings(setup: ClusterSetup): Seq[Binding[_]] =
     bindings(ElasticClient.remote(setup.settings, setup.uri), setup)
+
+  def indexTypeBinding(mapping: (String, IndexType)) = mapping match {
+    case (name, indexType) => bind[IndexType].qualifiedWith(name).toInstance(indexType)
+  }
 
   override def bindings(environment: Environment, configuration: Configuration) = {
 
     val elastic4sConfiguration = configuration.getConfig(ConfigurationKey)
       .getOrElse(throw new Elastic4sConfigException("You should provide Elastic4s configuration when loading module"))
 
-    val instancesSetup = buildSetup(elastic4sConfiguration)
+    val clusterSetup = buildSetup(elastic4sConfiguration)
 
-    if (instancesSetup.count(_.default == true) > 1) {
-      throw new Elastic4sConfigException("Cannot bind multiple default instances of ElasticClient")
+    if (clusterSetup.count(_.default == true) > 1) {
+      throw new Elastic4sConfigException("Cannot bind multiple default ES clusters")
     }
 
-    instancesSetup.flatMap(bindings) ++ IndexTypeBindingBuilder(elastic4sConfiguration).bindings
+    val indexTypes = IndexTypeConfigurationLoader.mappings(configuration)
+
+    clusterSetup.flatMap(bindings) ++ indexTypes.map(indexTypeBinding)
   }
 
-  case class IndexTypeBindingBuilder(elastic4sConfiguration: Configuration) {
-    def indexTypesBindings(indexTypesConfig: Configuration): Seq[Binding[_]] = {
-
-      def indexTypeBinding(name: String) = {
-        val indexTypeConfig = indexTypesConfig.getConfig(name).get
-        def getRequiredField(field: String) = {
-          indexTypeConfig
-            .getString(field)
-            .getOrElse(throw new Elastic4sConfigException(s"$field field is required for indexType $name"))
-        }
-
-        val indexType = IndexType(getRequiredField("index"), getRequiredField("type"))
-        logger.info(s"Binding IndexType $indexType with name $name")
-        bind[IndexType].qualifiedWith(name).toInstance(indexType)
-      }
-
-      indexTypesConfig.subKeys.toSeq.map(indexTypeBinding)
-    }
-    def bindings = elastic4sConfiguration
-      .getConfig(IndexTypesKey)
-      .map(indexTypesBindings)
-      .getOrElse(Seq.empty)
-  }
 }
