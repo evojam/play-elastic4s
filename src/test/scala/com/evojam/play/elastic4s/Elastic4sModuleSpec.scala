@@ -4,6 +4,8 @@ import org.specs2.mutable.Specification
 
 import play.api.Configuration
 
+import com.evojam.play.elastic4s.configuration.IndexTypeConfigurationLoader
+
 class Elastic4sModuleSpec extends Specification {
 
   lazy val module = new Elastic4sModule
@@ -32,7 +34,7 @@ class Elastic4sModuleSpec extends Specification {
       ))))
 
       module.buildSetup(conf) must haveLength(2)
-      module.IndexTypeBindingBuilder(conf).bindings must haveLength(2)
+      IndexTypeConfigurationLoader.mappings(conf) must haveLength(2)
 
 
     }
