@@ -46,15 +46,11 @@ class Elastic4sModule extends Module {
 
     val elastic4sConfiguration = configuration.getConfig(ConfigurationKey)
       .getOrElse(throw new Elastic4sConfigException("You should provide Elastic4s configuration when loading module"))
-
     val clusterSetup = buildSetup(elastic4sConfiguration)
-
     if (clusterSetup.count(_.default == true) > 1) {
       throw new Elastic4sConfigException("Cannot bind multiple default ES clusters")
     }
-
-    val indexTypes = IndexTypeConfigurationLoader.mappings(configuration)
-
+    val indexTypes = IndexTypeConfigurationLoader.mappings(elastic4sConfiguration)
     clusterSetup.flatMap(bindings) ++ indexTypes.map(indexTypeBinding)
   }
 
