@@ -6,7 +6,7 @@ import org.elasticsearch.common.settings.{ImmutableSettings, Settings}
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment, Logger}
 
-import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
+import com.sksamuel.elastic4s.{IndexType, ElasticClient, ElasticsearchClientUri}
 import com.typesafe.config.ConfigRenderOptions
 
 class Elastic4sConfigException(msg: String) extends Exception(msg: String)
@@ -18,6 +18,7 @@ class Elastic4sModule extends Module {
   val logger = Logger(getClass)
 
   val ConfigurationKey = "elastic4s"
+  val IndexTypesKey = "indexTypes"
   val UriKey = "uri"
 
   def uri(config: Configuration) = config.getString(UriKey)
@@ -35,7 +36,7 @@ class Elastic4sModule extends Module {
   }
 
   def buildSetup(in: Configuration): Seq[InstanceSetup] =
-    in.subKeys.flatMap(name => in.getConfig(name).map(name -> _)).toSeq.map {
+    in.subKeys.filterNot(_ == IndexTypesKey).flatMap(name => in.getConfig(name).map(name -> _)).toSeq.map {
       case (name, config) =>
         logger.info(s"Provide ElasticClient with configuration name=$name")
         InstanceSetup(name, settings(config), uri(config), config.getBoolean("default").getOrElse(false))
@@ -68,6 +69,30 @@ class Elastic4sModule extends Module {
       throw new Elastic4sConfigException("Cannot bind multiple default instances of ElasticClient")
     }
 
-    instancesSetup.flatMap(bindings)
+    instancesSetup.flatMap(bindings) ++ IndexTypeBindingBuilder(elastic4sConfiguration).bindings
+  }
+
+  case class IndexTypeBindingBuilder(elastic4sConfiguration: Configuration) {
+    def indexTypesBindings(indexTypesConfig: Configuration): Seq[Binding[_]] = {
+
+      def indexTypeBinding(name: String) = {
+        val indexTypeConfig = indexTypesConfig.getConfig(name).get
+        def getRequiredField(field: String) = {
+          indexTypeConfig
+            .getString(field)
+            .getOrElse(throw new Elastic4sConfigException(s"$field field is required for indexType $name"))
+        }
+
+        val indexType = IndexType(getRequiredField("index"), getRequiredField("type"))
+        logger.info(s"Binding IndexType $indexType with name $name")
+        bind[IndexType].qualifiedWith(name).toInstance(indexType)
+      }
+
+      indexTypesConfig.subKeys.toSeq.map(indexTypeBinding)
+    }
+    def bindings = elastic4sConfiguration
+      .getConfig(IndexTypesKey)
+      .map(indexTypesBindings)
+      .getOrElse(Seq.empty)
   }
 }
