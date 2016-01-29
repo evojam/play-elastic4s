@@ -12,8 +12,11 @@ import org.elasticsearch.action.index.IndexResponse
 
 import com.google.inject.Inject
 import com.sksamuel.elastic4s.{IndexType, IndexDefinition, ElasticClient, SearchDefinition}
-import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, _}
+import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, update => elastic4supdate, _}
 import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
+
+import org.elasticsearch.action.update.UpdateResponse
+
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
@@ -65,6 +68,16 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
         .optionalId(id)
     } map Option.apply
 
+  private def executeUpdate(indexType: IndexType, id: String, in: DocumentSource, upsert: Boolean)
+      (implicit exc: ExecutionContext): Future[Option[UpdateResponse]] =
+    client.execute {
+      logger.debug(s"Update with indexType=$indexType id=$id doc=${in.json}")
+      elastic4supdate(id)
+        .in(indexType)
+        .doc(in)
+        .docAsUpsert(upsert)
+    } map Option.apply
+
 
   def search(searchDef: SearchDefinition): PreparedSearch =
     PreparedSearch(searchDef, client)
@@ -98,6 +111,25 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   def index[T: Writes](indexType: IndexType, doc: T)(implicit exc: ExecutionContext) =
     index(indexType, None, doc)
 
+
+  def update[T: Writes](indexType: IndexType, id: String, doc: T, upsert: Boolean = false)
+      (implicit exc: ExecutionContext) = {
+    require(indexType != null, "indexType cannot be null")
+    require(id != null, "id cannot be null")
+    require(doc != null, "doc cannot be null")
+
+    executeUpdate(indexType, id, doc2source(doc), upsert).map {
+      case Some(response) if response.isCreated =>
+        logger.info("Document has been indexed (upsert), retrieving headers= " + getHeaderString(response))
+        true
+      case Some(response) if !response.isCreated =>
+        logger.info("Document has been updated, retrieving headers= " + getHeaderString(response))
+        true
+    case None =>
+      logger.error("Elastic execute result IndexResponse is null, I treat it as an error but can do nothing")
+      false
+    }
+  }
   /**
    * Executes a remove operation via the underlying ES client.
    * @param indexType ES index name and document type

@@ -14,9 +14,9 @@ import com.evojam.play.elastic4s.core.search.PreparedSearch
 trait ElasticSearchClient {
 
   /**
-   * Indexes or updates a document.
+   * Indexes a document.
    *
-   * Performs an ES Index request. If a document with given ID exists, it will be overwritten.
+   * Performs an ES Index request. This creates a new document in ES.
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html]]
    *
@@ -44,6 +44,24 @@ trait ElasticSearchClient {
   @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
   def index[T: Writes](doctype: IndexType, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
 
+  /**
+   * Updates a document.
+   *
+   * Performs an ES Update request, overriding the previously stored document with the given id.
+   *
+   * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html]]
+   *
+   * @param doctype index name and document type
+   * @param id id of the document to be updated
+   * @param doc the new document contents
+   * @param exc the execution context
+   * @param upsert if `true` the document will be created if it doesn't exist
+   * @tparam T type of the document, must have an implicit Writes[T] available in scope
+   * @return Future[Boolean] resolved with `true` if the operation succeeded
+   */
+  @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
+  def update[T: Writes](doctype: IndexType, id: String, doc: T, upsert: Boolean = false)
+      (implicit exc: ExecutionContext): Future[Boolean]
   /**
    * Removes a document with the given ID.
    *
