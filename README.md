@@ -8,6 +8,22 @@ Without a convenient way of configuration and injecting ElasticClient instance t
 
 This module lets you extend your application.conf and get an ElasticSearchClient injectable for free.
 
+## Installation
+
+Current stable version:
+
+```scala
+resolvers += Resolver.sonatypeRepo("releases")
+libraryDependencies += "com.evojam" % "play-elastic4s_2.11" % "0.1.0"
+```
+
+Current snapshot:
+
+```scala
+resolvers += Resolver.sonatypeRepo("snapshots")
+libraryDependencies += "com.evojam" % "play-elastic4s_2.11" % "0.1.0-SNAPSHOT"
+```
+
 ## Usage
 
 Provide ES configuration and enable this module in `application.conf`
