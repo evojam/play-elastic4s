@@ -4,6 +4,8 @@ crossScalaVersions := Seq("2.11.1", "2.11.4", "2.11.7")
 
 organization := "com.evojam"
 
+name := "play-elastic4s"
+
 scalacOptions ++= Seq(
   "-target:jvm-1.8",
   "-encoding", "UTF-8",
@@ -36,5 +38,4 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" % "play_2.11" % PlayVersion,
   "com.typesafe.play" % "play-json_2.11" % PlayVersion,
   "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4"
-  //"com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4"
 )
