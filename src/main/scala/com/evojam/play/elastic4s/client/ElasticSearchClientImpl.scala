@@ -17,12 +17,13 @@ import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
-class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchClient {
+class ElasticSearchClientImpl (val underlying: ElasticClient) extends ElasticSearchClient {
 
   private[this] val logger = Logger(getClass)
 
   /**
    * Extracts headers from ES response for logging purposes.
+ *
    * @param response ElasticSearch response
    * @return String with response headers or "&lt;null&gt;"
    */
@@ -46,7 +47,6 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
 
   /**
    * Executes an index operation via the underlying ES client.
-   *
    * If a document with the same id already exists, it will be overwritten.
    *
    * @param indexType type of ES document to be indexed
@@ -57,7 +57,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
    */
   private def executeIndex(indexType: IndexType, id: Option[String], in: DocumentSource)
       (implicit exc: ExecutionContext): Future[Option[IndexResponse]] =
-    client.execute {
+    underlying.execute {
       logger.debug(s"Index with indexType=$indexType doc=${in.json}")
       elastic4sindex
         .into(indexType)
@@ -67,7 +67,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
 
   private def executeUpdate(indexType: IndexType, id: String, in: DocumentSource, upsert: Boolean)
       (implicit exc: ExecutionContext): Future[Option[UpdateResponse]] =
-    client.execute {
+    underlying.execute {
       logger.debug(s"Update with indexType=$indexType id=$id doc=${in.json}")
       elastic4supdate(id)
         .in(indexType)
@@ -77,7 +77,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
 
 
   def search(searchDef: SearchDefinition): PreparedSearch =
-    PreparedSearch(searchDef, client)
+    PreparedSearch(searchDef, underlying)
 
 
   def index[T: Writes](indexType: IndexType, id: Option[String], doc: T)
@@ -127,14 +127,16 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
       false
     }
   }
+
   /**
    * Executes a remove operation via the underlying ES client.
+   *
    * @param indexType ES index name and document type
    * @param id id of the document that should be removed
    * @return
    */
   private def executeRemove(indexType: IndexType, id: String) =
-    client.execute {
+    underlying.execute {
       logger.debug(s"Remove document with indexType=$indexType id=$id")
       delete
         .id(id)
@@ -155,7 +157,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   }
 
   private def executeBulkIndex(indexType: IndexType, documents: Iterable[DocumentSource]) =
-    client.execute {
+    underlying.execute {
       bulk (
         documents.map(source => elastic4sindex.into(indexType).doc(source))
       )
