@@ -6,17 +6,15 @@ import scala.language.implicitConversions
 import play.api.Logger
 import play.api.libs.json._
 
+import com.evojam.play.elastic4s.core.crud.{PreparedMultiGet, PreparedGet}
 import org.elasticsearch.action.ActionResponse
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexResponse
-
-import com.google.inject.Inject
-import com.sksamuel.elastic4s.{IndexType, IndexDefinition, ElasticClient, SearchDefinition}
-import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, update => elastic4supdate, _}
-import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
-
 import org.elasticsearch.action.update.UpdateResponse
 
+import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, update => elastic4supdate, get => elastic4sget, _}
+import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
@@ -26,6 +24,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
 
   /**
    * Extracts headers from ES response for logging purposes.
+ *
    * @param response ElasticSearch response
    * @return String with response headers or "&lt;null&gt;"
    */
@@ -82,7 +81,6 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   def search(searchDef: SearchDefinition): PreparedSearch =
     PreparedSearch(searchDef, client)
 
-
   def index[T: Writes](indexType: IndexType, id: Option[String], doc: T)
       (implicit exc: ExecutionContext): Future[Boolean] = {
     require(indexType != null, "indexType cannot be null")
@@ -132,6 +130,7 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   }
   /**
    * Executes a remove operation via the underlying ES client.
+   *
    * @param indexType ES index name and document type
    * @param id id of the document that should be removed
    * @return
@@ -169,6 +168,19 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
     require(documents != null, "documents cannot be null")
     executeBulkInsert(indexType, documents.map(doc2source(_)))
   }
+
+  def get(id: String, docType: IndexType)
+    (implicit exc: ExecutionContext): PreparedGet = PreparedGet(elastic4sget id id from docType, client)
+
+  def get(query: GetDefinition)
+    (implicit exc: ExecutionContext): PreparedGet = PreparedGet(query, client)
+
+  def bulkGet(queries: Iterable[GetDefinition])
+    (implicit exc: ExecutionContext): PreparedMultiGet = PreparedMultiGet(queries, client)
+
+  def bulkGet(ids: Iterable[String], docType: IndexType)
+    (implicit exc: ExecutionContext): PreparedMultiGet = PreparedMultiGet(ids, docType, client)
+
 }
 
 case class NotAJsObjectException[A : Writes](doc: A) extends Exception(s"Document ${doc.toString} is not a JSON object")

@@ -24,7 +24,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 libraryDependencies += "com.evojam" % "play-elastic4s_2.11" % "0.1.0-SNAPSHOT"
 ```
 
-## Usage
+## Quick start
 
 Provide ES configuration and enable this module in `application.conf`. You may list multiple Elasticsearch client
 configuration blocks, and multiple index definitions in the indexTypes block. They will be available for injection
@@ -71,3 +71,31 @@ Then inject where needed, e.g:
 
 Note, you may access the underlying `ElasticClient` from `com.sksamuel.elastic4s.ElasticClient` if needed
 through `elastic.underlying` given the example above.
+
+## CRUD
+
+_Examples below assume similar class structure as above, i.e having an Injected client and `indexType`._
+
+Simple [get](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html) by the document's `id`
+
+    def get(id: String): Future[Option[MyRecord]] =
+        elastic.get(id, myIndex)
+          .collect[MyRecord]
+
+Similar request as above, however this time using the [get api](https://github.com/sksamuel/elastic4s/blob/master/guide/get.md) from [elastic4s](https://github.com/sksamuel/elastic4s/) for more advanced querying.
+
+    def get(docId: String, versionNumber: Int): Future[Option[MyRecord]] =
+        elastic.get(get id docId from myIndex version versionNumber)
+          .collect[MyRecord]
+
+A [multiget](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html) request for a list of `id`'s
+
+    def getAll(ids: List[String]): Future[List[MyRecord]] =
+        elastic.bulkGet(ids, myIndex)
+           .collect[MyRecord]
+
+As in the `get` request we can also use the [get api](https://github.com/sksamuel/elastic4s/blob/master/guide/get.md). In this get query we only want to retrieve the fields "firstName" and "lastName" from the fetched documents.
+
+    def getAll(ids: List[String]): Future[List[MyRecord]] =
+        elastic.bulkGet(ids.map(docId => get id docId from myIndex fields List("firstName", "lastName"))
+            .collect[MyRecord]

@@ -4,12 +4,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.libs.json.Writes
 
-import com.sksamuel.elastic4s.{IndexType, SearchDefinition}
-
-import org.elasticsearch.action.bulk.BulkResponse
-
-
+import com.evojam.play.elastic4s.core.crud.{PreparedGet, PreparedMultiGet}
 import com.evojam.play.elastic4s.core.search.PreparedSearch
+import com.sksamuel.elastic4s.{GetDefinition, IndexType, SearchDefinition}
+import org.elasticsearch.action.bulk.BulkResponse
 
 trait ElasticSearchClient {
 
@@ -112,6 +110,43 @@ trait ElasticSearchClient {
    */
   @throws[NotAJsObjectException[_]]("if some of the documents serialize to something that is not a Json object")
   def bulkInsert[T: Writes](doctype: IndexType, documents: Iterable[T]): Future[BulkResponse]
+
+  /**
+    * Prepares a get request for a document with a given ID.
+    *
+    * @param id id of the requested document
+    * @param docType index name and document type
+    * @param exc the execution context
+    * @return a [[PreparedGet]] instance encapsulating the query
+    */
+  def get(id: String, docType: IndexType)(implicit exc: ExecutionContext): PreparedGet
+
+  /**
+    * Prepares a get request with the given [[com.sksamuel.elastic4s.GetDefinition]]
+    * @param query the get defintion consturcted using the elastic4s GetDSL
+    * @param exc the execution context
+    * @return a [[PreparedGet]] instance encapsulating the query
+    */
+  def get(query: GetDefinition)(implicit exc: ExecutionContext): PreparedGet
+
+  /**
+    * Prepares a multiget request using standard elastic4s get queries.
+    *
+    * @param queries standard elastic4s queries
+    * @param exc  the execution context
+    * @return a [[PreparedMultiGet]] instance encapsulating the query
+    */
+  def bulkGet(queries: Iterable[GetDefinition])(implicit exc: ExecutionContext): PreparedMultiGet
+
+  /**
+    * Prepares a multiget request for the given ids and docType.
+    *
+    * @param ids the document identifiers you wish to fetch
+    * @param docType index name and document type
+    * @param exc the execution context
+    * @return a [[PreparedMultiGet]] instance encapsulating the query.
+    */
+  def bulkGet(ids: Iterable[String], docType: IndexType)(implicit exc: ExecutionContext): PreparedMultiGet
 }
 
 
