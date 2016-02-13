@@ -181,6 +181,16 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   def bulkGet(ids: Iterable[String], docType: IndexType)
     (implicit exc: ExecutionContext): PreparedMultiGet = PreparedMultiGet(ids, docType, client)
 
+  private def executeBulkRemove(ids: Iterable[String], indexType: IndexType) =
+    client.execute {
+      bulk (
+        ids.map(id => delete.id(id).from(indexType))
+      )
+    }
+
+  def bulkRemove(ids: Iterable[String], indexType: IndexType)(implicit exc: ExecutionContext): Future[BulkResponse] =
+    executeBulkRemove(ids, indexType)
+
 }
 
 case class NotAJsObjectException[A : Writes](doc: A) extends Exception(s"Document ${doc.toString} is not a JSON object")

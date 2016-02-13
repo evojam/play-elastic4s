@@ -147,6 +147,15 @@ trait ElasticSearchClient {
     * @return a [[PreparedMultiGet]] instance encapsulating the query.
     */
   def bulkGet(ids: Iterable[String], docType: IndexType)(implicit exc: ExecutionContext): PreparedMultiGet
+
+  /**
+    * Executes a bulk remove for the documents with the given ids from the given docType
+    * @param ids identifiers of the documents to be removed
+    * @param docType from which index to remove the documents from
+    * @param exc the execution context
+    * @return the origin BulkResponse from ES
+    */
+  def bulkRemove(ids: Iterable[String], docType: IndexType)(implicit exc: ExecutionContext): Future[BulkResponse]
 }
 
 

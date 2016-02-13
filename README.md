@@ -76,6 +76,8 @@ through `elastic.underlying` given the example above.
 
 _Examples below assume similar class structure as above, i.e having an Injected client and `indexType`._
 
+### Get
+
 Simple [get](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html) by the document's `id`
 
     def get(id: String): Future[Option[MyRecord]] =
@@ -92,10 +94,22 @@ A [multiget](https://www.elastic.co/guide/en/elasticsearch/reference/current/doc
 
     def getAll(ids: List[String]): Future[List[MyRecord]] =
         elastic.bulkGet(ids, myIndex)
-           .collect[MyRecord]
+          .collect[MyRecord]
 
 As in the `get` request we can also use the [get api](https://github.com/sksamuel/elastic4s/blob/master/guide/get.md). In this get query we only want to retrieve the fields "firstName" and "lastName" from the fetched documents.
 
     def getAll(ids: List[String]): Future[List[MyRecord]] =
         elastic.bulkGet(ids.map(docId => get id docId from myIndex fields List("firstName", "lastName"))
-            .collect[MyRecord]
+          .collect[MyRecord]
+
+### Delete
+
+Remove a document with a given `id` from an index
+
+    def delete(id: String): Future[Boolean] =
+      elastic.remove(myIndex, id)
+
+Bulk remove documents with the given `ids` from an index
+
+    def bulkDelete(ids: List[String]): Future[BulkResponse] =
+      elastic.bulkRemove(myIndex, ids)
