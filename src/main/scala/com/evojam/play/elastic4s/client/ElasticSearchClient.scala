@@ -20,7 +20,7 @@ trait ElasticSearchClient {
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html]]
    *
-   * @param doctype index name and document type
+   * @param indexType index name and document type
    * @param id id to be assigned to the document
    * @param doc the document to be indexed
    * @param exc the execution context
@@ -28,21 +28,21 @@ trait ElasticSearchClient {
    * @return Future[Boolean] resolved with `true` if the operation succeeded
    */
   @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
-  def index[T: Writes](doctype: IndexType, id: String, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
+  def index[T: Writes](indexType: IndexType, id: String, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
 
   /**
    * Indexes a document, assigning a new id.
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html]]
    *
-   * @param doctype index name and document type
+   * @param indexType index name and document type
    * @param doc document contents
    * @param exc execution context
    * @tparam T type of the document with Writes[T] in implicit scope
    * @return Future[Boolean] resolved with `true` if the operation succeeded
    */
   @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
-  def index[T: Writes](doctype: IndexType, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
+  def index[T: Writes](indexType: IndexType, doc: T)(implicit exc: ExecutionContext): Future[Boolean]
 
   /**
    * Updates a document.
@@ -51,7 +51,7 @@ trait ElasticSearchClient {
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html]]
    *
-   * @param doctype index name and document type
+   * @param indexType index name and document type
    * @param id id of the document to be updated
    * @param doc the new document contents
    * @param exc the execution context
@@ -60,20 +60,20 @@ trait ElasticSearchClient {
    * @return Future[Boolean] resolved with `true` if the operation succeeded
    */
   @throws[NotAJsObjectException[_]]("if the document serializes to something that is not a Json object")
-  def update[T: Writes](doctype: IndexType, id: String, doc: T, upsert: Boolean = false)
+  def update[T: Writes](indexType: IndexType, id: String, doc: T, upsert: Boolean = false)
       (implicit exc: ExecutionContext): Future[Boolean]
   /**
    * Removes a document with the given ID.
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html]]
    *
-   * @param doctype index name and document type
+   * @param indexType index name and document type
    * @param id id to be assigned to the document
    * @param exc the execution context
    * @return Future[Boolean] resolved with `true` if the document was deleted successfully, `false` if it
    *         couldn't be found.
    */
-  def remove(doctype: IndexType, id: String)(implicit exc: ExecutionContext): Future[Boolean]
+  def remove(indexType: IndexType, id: String)(implicit exc: ExecutionContext): Future[Boolean]
 
   /**
    * Prepares a search query for execution.
@@ -105,13 +105,13 @@ trait ElasticSearchClient {
    *
    * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html]]
    *
-   * @param doctype index name and document type
+   * @param indexType index name and document type
    * @param documents documents to be indexed
    * @tparam T type of the documents with Writes[T] available in the implicit scope
    * @return the original response from ES
    */
   @throws[NotAJsObjectException[_]]("if some of the documents serialize to something that is not a Json object")
-  def bulkIndex[T: Writes](doctype: IndexType, documents: Iterable[T]): Future[BulkResponse]
+  def bulkIndex[T: Writes](indexType: IndexType, documents: Iterable[T]): Future[BulkResponse]
 }
 
 

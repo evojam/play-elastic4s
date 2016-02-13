@@ -9,14 +9,11 @@ import play.api.libs.json._
 import org.elasticsearch.action.ActionResponse
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexResponse
+import org.elasticsearch.action.update.UpdateResponse
 
-import com.google.inject.Inject
 import com.sksamuel.elastic4s.{IndexType, IndexDefinition, ElasticClient, SearchDefinition}
 import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, update => elastic4supdate, _}
 import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
-
-import org.elasticsearch.action.update.UpdateResponse
-
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
