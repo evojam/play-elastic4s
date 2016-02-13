@@ -111,7 +111,7 @@ trait ElasticSearchClient {
    * @return the original response from ES
    */
   @throws[NotAJsObjectException[_]]("if some of the documents serialize to something that is not a Json object")
-  def bulkInsert[T: Writes](doctype: IndexType, documents: Iterable[T]): Future[BulkResponse]
+  def bulkIndex[T: Writes](doctype: IndexType, documents: Iterable[T]): Future[BulkResponse]
 }
 
 

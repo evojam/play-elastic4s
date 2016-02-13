@@ -157,17 +157,17 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
     }
   }
 
-  private def executeBulkInsert(indexType: IndexType, documents: Iterable[DocumentSource]) =
+  private def executeBulkIndex(indexType: IndexType, documents: Iterable[DocumentSource]) =
     client.execute {
       bulk (
         documents.map(source => elastic4sindex.into(indexType).doc(source))
       )
     }
 
-  def bulkInsert[T: Writes](indexType: IndexType, documents: Iterable[T]): Future[BulkResponse] = {
+  def bulkIndex[T: Writes](indexType: IndexType, documents: Iterable[T]): Future[BulkResponse] = {
     require(indexType != null, "index name cannot be null")
     require(documents != null, "documents cannot be null")
-    executeBulkInsert(indexType, documents.map(doc2source(_)))
+    executeBulkIndex(indexType, documents.map(doc2source(_)))
   }
 }
 
