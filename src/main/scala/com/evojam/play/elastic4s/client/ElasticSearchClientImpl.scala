@@ -9,14 +9,11 @@ import play.api.libs.json._
 import org.elasticsearch.action.ActionResponse
 import org.elasticsearch.action.bulk.BulkResponse
 import org.elasticsearch.action.index.IndexResponse
+import org.elasticsearch.action.update.UpdateResponse
 
-import com.google.inject.Inject
 import com.sksamuel.elastic4s.{IndexType, IndexDefinition, ElasticClient, SearchDefinition}
 import com.sksamuel.elastic4s.ElasticDsl.{index => elastic4sindex, update => elastic4supdate, _}
 import com.sksamuel.elastic4s.source.{DocumentSource, JsonDocumentSource}
-
-import org.elasticsearch.action.update.UpdateResponse
-
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
@@ -157,17 +154,17 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
     }
   }
 
-  private def executeBulkInsert(indexType: IndexType, documents: Iterable[DocumentSource]) =
+  private def executeBulkIndex(indexType: IndexType, documents: Iterable[DocumentSource]) =
     client.execute {
       bulk (
         documents.map(source => elastic4sindex.into(indexType).doc(source))
       )
     }
 
-  def bulkInsert[T: Writes](indexType: IndexType, documents: Iterable[T]): Future[BulkResponse] = {
+  def bulkIndex[T: Writes](indexType: IndexType, documents: Iterable[T]): Future[BulkResponse] = {
     require(indexType != null, "index name cannot be null")
     require(documents != null, "documents cannot be null")
-    executeBulkInsert(indexType, documents.map(doc2source(_)))
+    executeBulkIndex(indexType, documents.map(doc2source(_)))
   }
 }
 
