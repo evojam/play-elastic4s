@@ -168,4 +168,5 @@ class ElasticSearchClientImpl (val client: ElasticClient) extends ElasticSearchC
   }
 }
 
-case class NotAJsObjectException[A : Writes](doc: A) extends Exception(s"Document ${doc.toString} is not a JSON object")
+case class NotAJsObjectException[A : Writes](doc: A)
+  extends IllegalArgumentException(s"Document ${doc.toString} is not a JSON object")
