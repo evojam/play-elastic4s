@@ -4,14 +4,18 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import play.api.libs.json.Writes
 
-import com.sksamuel.elastic4s.{IndexType, SearchDefinition}
+import com.sksamuel.elastic4s.{ElasticClient, IndexType, SearchDefinition}
 
 import org.elasticsearch.action.bulk.BulkResponse
-
 
 import com.evojam.play.elastic4s.core.search.PreparedSearch
 
 trait ElasticSearchClient {
+
+  /*
+   *  Use to access the underlying [[com.sksamuel.elastic4s.ElasticClient]] instance.
+   */
+  val underlying: ElasticClient
 
   /**
    * Indexes a document.
