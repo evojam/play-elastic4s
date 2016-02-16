@@ -1,3 +1,7 @@
+organization := "com.evojam"
+
+name := "play-elastic4s"
+
 scalaVersion := "2.11.7"
 
 crossScalaVersions := Seq("2.11.1", "2.11.4", "2.11.7")
@@ -31,6 +35,7 @@ val PlayVersion = "2.4.3"
 libraryDependencies ++= Seq(
   "com.typesafe.play" % "play_2.11" % PlayVersion,
   "com.typesafe.play" % "play-json_2.11" % PlayVersion,
-  "com.sksamuel.elastic4s" %% "elastic4s-core" % "1.7.4"
-  //"com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4"
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.1.0",
+  "com.typesafe.play" %% "play-specs2" % PlayVersion % Test,
+  "org.specs2" %% "specs2-scalacheck" % "3.6" % Test
 )
