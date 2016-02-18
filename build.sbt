@@ -27,7 +27,8 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.typesafeRepo("snapshots"),
   Resolver.typesafeRepo("releases"),
-  Resolver.typesafeIvyRepo("releases")
+  Resolver.typesafeIvyRepo("releases"),
+	"scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 )
 
 val PlayVersion = "2.4.3"
