@@ -1,19 +1,20 @@
 package com.evojam.play.elastic4s.lifecycle
 
-import javax.inject.{Singleton, Inject}
+import javax.inject.{Inject, Singleton}
 
+import scala.collection.mutable
 import scala.concurrent.Future
 
 import play.api.inject.ApplicationLifecycle
 
 import com.sksamuel.elastic4s.ElasticClient
-import scala.collection.mutable
 
+import com.evojam.play.elastic4s.PlayElasticFactory
 import com.evojam.play.elastic4s.configuration.ClusterSetup
 
 
 @Singleton
-private[elastic4s] class LifecycleElasticFactory @Inject() (lifecycle: ApplicationLifecycle) {
+class PlayElasticFactoryImpl @Inject()(lifecycle: ApplicationLifecycle) extends PlayElasticFactory {
   private[this] val clients =  mutable.Map.empty[ClusterSetup, ElasticClient]
 
   private[this] def buildTransportClient(setup: ClusterSetup) = {
@@ -24,6 +25,9 @@ private[elastic4s] class LifecycleElasticFactory @Inject() (lifecycle: Applicati
     client
   }
 
-  def getOrCreate(setup: ClusterSetup) = clients.getOrElseUpdate(setup, buildTransportClient(setup))
+  def apply(cs: ClusterSetup) = clients.getOrElseUpdate(cs, buildTransportClient(cs))
 
 }
+
+
+

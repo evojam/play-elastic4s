@@ -1,6 +1,6 @@
 package com.evojam.play.elastic4s.configuration
 
-import play.api.Configuration
+import play.api.{Logger, Configuration}
 
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.settings.loader.JsonSettingsLoader
@@ -10,7 +10,9 @@ import com.typesafe.config.ConfigRenderOptions
 
 import com.evojam.play.elastic4s.Elastic4sConfigException
 
-object ClusterConfigBuilder {
+object ClusterSetupLoader {
+
+  private val logger = Logger(getClass)
 
   val UriKey = "uri"
   lazy val loader = new JsonSettingsLoader()
@@ -22,7 +24,7 @@ object ClusterConfigBuilder {
 
   def settings(config: Configuration): Settings = {
     Settings.settingsBuilder()
-      .put("client.transport.sniff", true) // Default behaviour for us
+      .put("client.transport.sniff", true) // Will discover other hosts by default
       .put(loader.load(config.underlying.root().render(ConfigRenderOptions.concise())))
       .build()
   }
@@ -30,9 +32,11 @@ object ClusterConfigBuilder {
   def setup(config: Configuration): ClusterSetup = ClusterSetup(uri(config), settings(config))
 
   def getClusterSetups(clustersConf: Configuration): Map[String, ClusterSetup] = {
-    clustersConf.keys
+    val clusterSetups = clustersConf.subKeys
       .map(key => key -> setup(clustersConf.getConfig(key).get))
       .toMap
+    logger info s"Loaded configuration for following clusters: ${clusterSetups.keys.mkString(",")}"
+    clusterSetups
   }
 
 }
