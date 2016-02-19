@@ -1,10 +1,21 @@
 language: scala
 scala:
-  - 2.11.7
+- 2.11.7
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION compile test scalastyle
+- sbt ++$TRAVIS_SCALA_VERSION compile test scalastyle
 jdk:
-  - oraclejdk8
+- oraclejdk8
 notifications:
   email:
-    - artur@evojam.com
+  - artur@evojam.com
+env:
+  global:
+  - secure: SyOrfnDXj2MJRPFoe1J/W+TKVPk2WFCRnB9L5yD37OLL4O8da4oaAdrIGLSVO4I4VqZ2k1ACDCSfYzseD8JVj3EbEau8ye2C7Mx/VB64WWB95xxodgjxLpi6i5tRJQprlTBs4+8QbfiCrhLgQ6FarPh8KQxadKUTbTN8JtIsdLUUkffnvxa6Wqz2cZ1Q++BpawqSSxzTJvMX4KFIoFqdj6a/NcSqW3sSgGrNCqf4rcex686wyTJIReOwPpFRWp2lfVC7uP3M+G++mtr0IMg+/sRGMpL/hitA9Yzztqw8NZGocjLCOLryiQcwCS7V39bqUJPw45ZWmcW3uMIOEjx0ciWL4LVpI5HYeCQsz7WzHsi8Xy8V8iWPbyjjmHGgsvhlsCIpLLx0zGvHUltmfORNG85NMq7U+df+b2npf3UXBM6disL6wpAZQ+mtfHXu59/IJojs02QH2SNQMP4C8LYdhEOI3Tx9dUhj6S5brAbsR1mx9wj8H4gz4LiurilSOdGy5eR0Txgbk0xjzFfJuZRKb+xwzjbGt+YjjghQrNVobFAPPKwZPvgGbWmSZV11+5JXrI6KP5jCxWIR/JW8OJm7+lfHIje4hlqZbdkiQKk0jnSZufgpKXRo4EJMPu2ObElmvWKQeQDeDX5wum+FF5fb7DUw4/zJK2c60MdV+/vaVI0=
+  - secure: PgwIT5+1rzLaEQ1OWW3Svi/iSo2Xhdrm3fhL9jlimwO35Mk6CYcCnzCjgUWmSKc+nK5acGoh3hmsz47IuGlH9Ve4XjLgkzcoJGEZmlQ59s74+avYF3P7OS4Y88sd9wglvX2tgDzlhoPcowN/AgqhaBc3KVAUktCB+ZwSbK63cAK6vfysf8hLwZzaJY6G+4o8mByjsdi9t7N0AE5EdfcG1rBVWnbivpqlX9dUZQdjFvTVuOEmRUJvJJ6/kd9Cw5+TEduEYuTxMt6B+1cE41wXb+b4RAnHUpazakvlqM23Ld85yHKGOUimlZISEzSS4yajQquf9jnOt/YLCCK7tDgZ2fTfOjDOLDKs1yb2cA+pERYY2szIilfzAgWSMlQ10q6vwMQ78FlCUSW4NnuPZUY217M5u5sFuNHfc5V6fnMj2Y9nNb72VAA59t5eoabzaAx215Lr8elgXhJIfThLb6OPmccFFWPmrIu9KzUGw7rfUqEZjpg1uNAbASkDEUsTv2u++P5sfOJCY84U1joPdoArAqcKimb2PeAB8Y/aBgoito8d/LDLLQyUBpzbONUjJJdXlUuHuGIlQGwIwI4dnFgzl2aQZFyEedFmBcSb/ONfvbK3obbfSKeEdrFPAjaFxbwqRtzd0ONjI/z9yLaDaWy/FjdYgUcX4ssLLaQI79kKMMk=
+  - secure: JoJUgq0dQZadB+X+odsL87tj/oA0p5M3cYfG2FyEiKWZYtMDC1jiwGtRSbEMg23NwcoWQRiBxDbYmG0dcq60HbAKsGv1dzEAdKDOE9jpeOwmQ04Y5Pz3cfwFfQqDijBNu3ve0E2fsrI8zA/KJjwrk0wkV3uKzmMrVPCcvnTfU7COT7vobPZAGitINzJIZyNpNiYbme9mOYMiD+AsTjnWvLNFl8MQn9Qz/1rEdj4kFjTdRcJSy1ueDSL5Pqqz3DMpl8Zm1i1dsLetEr/rVKcfzuXTBfX48XNN3S1KzjArgwxJk2lpYqBH0kSZES2thgW3qeBIuZpBVbHX+J4tbHKxO3zi1OjdfYhdrUTvFjXOT2KhQosn/ZRHtM8FVzFXo2xvtwiHFW4JlnnTwLkR9EfDEmUFr5Qr1LIICOsXyU41RwNfRZGrHCEXuQ8KGqk4seQX+5nmzVOpqpJ00wnvPkLtRPaGGlzAUwx2dO30nYBMl9t24XidyCZr9x0V179jlkx+B/Dq0LvUWoOd9nkfl7aNMuwI8YwiZ6u7QFjMlK3BnRFm1MThREoVv/rIJLXHHWAEwuXQWyxHqFgi1oSWnMWwVy3Ym+AsOqFMc/ml/B/ZAyeV8Z6Fz1ToLstIVbsQKOfPuUgb8TYfMR6Qh04EN3Avjlv0oJZYS5Pt7tHchbhIKQw=
+after_success:
+- '[[ $TRAVIS_BRANCH == "master" ]] && { sbt publish-signed; };'
+before_install:
+- openssl aes-256-cbc -K $encrypted_1a4be0926a85_key -iv $encrypted_1a4be0926a85_iv
+  -in travis-publish.tar.enc -out travis-publish.tar -d
+- tar xvf travis-publish.tar

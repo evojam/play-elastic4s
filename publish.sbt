@@ -35,3 +35,8 @@ pomExtra := (
 licenses := Seq("Apache 2.0 License" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
 homepage := Some(url("https://github.com/evojam/play-elastic4s"))
+
+
+pgpPublicRing := file("travis-publish/pubring.pgp")
+
+pgpSecretRing := file("travis-publish/secring.pgp")
