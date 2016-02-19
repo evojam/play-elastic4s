@@ -40,3 +40,7 @@ homepage := Some(url("https://github.com/evojam/play-elastic4s"))
 pgpPublicRing := file("travis-publish/pubring.pgp")
 
 pgpSecretRing := file("travis-publish/secring.pgp")
+
+pgpPassphrase := Option(System.getenv().get("PGP_PASSPHRASE")).map(_.toCharArray)
+
+
