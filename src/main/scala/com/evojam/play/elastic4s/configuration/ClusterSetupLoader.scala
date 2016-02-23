@@ -15,8 +15,16 @@ object ClusterSetupLoader {
   private val logger = Logger(getClass)
 
   val UriKey = "uri"
+  val TypeKey = "type"
   lazy val loader = new JsonSettingsLoader()
 
+  def isTransport(config: Configuration) = config.getString(TypeKey) match {
+    case Some("transport") => true
+    case Some("node") => false
+    case _ => throw new Elastic4sConfigException(
+      "Configuration field type is required for cluster setup; pass either \"node\" or \"transport\""
+    )
+  }
 
   def uri(config: Configuration) = config.getString(UriKey)
     .map(ElasticsearchClientUri(_))
@@ -29,7 +37,10 @@ object ClusterSetupLoader {
       .build()
   }
 
-  def setup(config: Configuration): ClusterSetup = ClusterSetup(uri(config), settings(config))
+  def setup(config: Configuration): ClusterSetup = isTransport(config) match {
+    case true => RemoteClusterSetup(uri(config), settings(config))
+    case false => LocalNodeSetup(settings(config))
+  }
 
   def getClusterSetups(clustersConf: Configuration): Map[String, ClusterSetup] = {
     val clusterSetups = clustersConf.subKeys

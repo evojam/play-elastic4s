@@ -34,28 +34,54 @@ Extend your application.conf to load the module and get all goodies injectable:
 
 ```hocon
 elastic4s {
-		clusters {
-				myCluster {
-					 uri: elasticsearch://host:port  // <-- pass something useful here
-					 cluster.name: "mycluster"       // <-- and here
-				}
-		}
-		indexAndTypes {                        // <-- this section is not required, but
-				book {                             //     this index/type pair will be injectable later
-						index: "library"
-						type: "book"
-				}
-		}
+    clusters {
+        myCluster {
+           type: "transport"               // <-- either "transport" or "node"
+           cluster.name: "mycluster"       // <-- set your cluster name here
+           uri: elasticsearch://host:port  // <-- if using transport client, pass uri to the cluster
+        }
+    }
+    indexAndTypes {                        // <-- this section is not required, but
+        book {                             //     this index/type pair will be injectable later
+            index: "library"
+            type: "book"
+        }
+    }
 }
 
 play.modules.enabled += "com.evojam.play.elastic4s.Elastic4sModule"
 ```
 
-You may define any number of clusters. Each of them needs to have the two above
-fields. Any other fields will be passed to Elasticsearch Java driver
-(see [Transport Client docs](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/transport-client.html)).
+You may define any number of clusters. Each of them needs to have `type` which
+is set either to `"node"` or `"transport"`. This field determines whether an
+embedded client or transport client will be created. Also, each cluster needs to
+have `cluster.name` set. Transport clients require an extra `uri` field with
+elasticsearch uri. Any other fields will be passed to Elasticsearch Java driver
+settings builder. Please refer to [Java Client docs], paying attention to [Node
+Client docs] and [Transport Client docs].
 
-You may use the `indexAndTypes` node to configure names of your indices in ES.
+  [Java Client docs]: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/client.html
+  [Node Client docs]: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/node-client.html
+  [Transport Client docs]: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/transport-client.html
+
+If you have `elasticsearch.yml` file in your classpath, it will also be loaded.
+In case of conflicts, `application.conf` wins. It is discouraged to have
+configuration in two places, though, so we'd rather you dropped the
+`elasticsearch.yml`.
+
+**Warning: Node clients will hurt you unless properly configured.** By default,
+an embedded client will join the ES cluster and will try and store some data
+(meaning that some shards will be allocated to it). Then on application shutdown
+these shards will be lost. Moreover, the default settings allow the embedded
+client to become the master node in the cluster. This is probably not what you
+want.
+
+As a final note on connection setup, please bear in mind that Elasticsearch
+nodes have autodiscovery system and will automatically form clusters. Therefore
+running multiple node clients in a single application may lead to strange
+behavior.
+
+You may use the `indexAndTypes` node to configure names of your indexes in ES.
 As a good practice, you should probably put aliases here, not hard names
 (refer to [ES docs on aliases](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)). Every key in that node will be transformed to
 an injectable [`IndexAndType`](https://github.com/sksamuel/elastic4s/blob/master/elastic4s-core/src/main/scala/com/sksamuel/elastic4s/IndexAndTypes.scala) instance.

@@ -7,25 +7,29 @@ import scala.concurrent.Future
 
 import play.api.inject.ApplicationLifecycle
 
-import com.sksamuel.elastic4s.ElasticClient
+import org.elasticsearch.common.settings.Settings
+
+import com.sksamuel.elastic4s.{ElasticsearchClientUri, ElasticClient}
 
 import com.evojam.play.elastic4s.PlayElasticFactory
-import com.evojam.play.elastic4s.configuration.ClusterSetup
+import com.evojam.play.elastic4s.configuration.{LocalNodeSetup, RemoteClusterSetup, ClusterSetup}
 
 
 @Singleton
 class PlayElasticFactoryImpl @Inject()(lifecycle: ApplicationLifecycle) extends PlayElasticFactory {
   private[this] val clients =  mutable.Map.empty[ClusterSetup, ElasticClient]
 
-  private[this] def buildTransportClient(setup: ClusterSetup) = {
-    val client = ElasticClient.transport(setup.settings, setup.uri)
+  private[this] def withStopHook(client: ElasticClient) = {
     lifecycle.addStopHook(() => Future.successful {
       client.close() // FIXME: elastc4s .close() silently drops all exceptions
     })
     client
   }
 
-  def apply(cs: ClusterSetup) = clients.getOrElseUpdate(cs, buildTransportClient(cs))
+  def apply(cs: ClusterSetup) = clients.getOrElseUpdate(cs, withStopHook(cs match {
+    case RemoteClusterSetup(uri, settings) => ElasticClient.transport(settings, uri)
+    case LocalNodeSetup(settings) => ElasticClient.local(settings)
+  }))
 
 }
 
