@@ -210,3 +210,17 @@ class BookDao @Inject()(
 }
 ```
 
+
+# For developers
+
+**Releasing:** all commits to master branch automatically trigger publishing to
+[Sonatype OSS] from Travis CI. For snapshot versions, this is enough. For
+release versions, one needs to login to the repository manager and close the
+staging repository, as described at [Sonatype releasing guide]. Also make sure
+to tag released versions, preferably using GitHub release feature. Finally,
+after having released a `X.Y.Z` version, make another commit that changes
+version number in `build.sbt` to `X.Y.(Z+1)-SNAPSHOT` in order to avoid a
+duplicate release with the same number.
+
+  [Sonatype OSS]: https://oss.sonatype.org
+  [Sonatype releasing guide]: http://central.sonatype.org/pages/releasing-the-deployment.html
