@@ -213,6 +213,11 @@ class BookDao @Inject()(
 
 # For developers
 
+Please use
+[git-flow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/), with
+one exception regarding finishing features: instead of doing `git flow feature
+finish X`, submit a pull request and merge it in GitHub.
+
 **Releasing:** all commits to master branch automatically trigger publishing to
 [Sonatype OSS] from Travis CI. For snapshot versions, this is enough. For
 release versions, one needs to login to the repository manager and close the
