@@ -2,9 +2,9 @@ organization := "com.evojam"
 
 name := "play-elastic4s"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
-crossScalaVersions := Seq("2.11.1", "2.11.4", "2.11.7")
+crossScalaVersions := Seq("2.11.1", "2.11.4", "2.11.7", "2.11.8")
 
 scalacOptions ++= Seq(
   "-target:jvm-1.8",
@@ -31,7 +31,7 @@ resolvers ++= Seq(
 	"scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 )
 
-val PlayVersion = "2.5.1"
+val PlayVersion = "2.5.3"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" % "play_2.11" % PlayVersion,
