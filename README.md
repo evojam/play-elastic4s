@@ -15,15 +15,15 @@ Quick Start
 -----------
 
 There are no stable releases yet. We're testing the current version
-with Elasticsearch 2.2.0 and it will not work with Elasticsearch other
-than 2.2.X. Moreover, we depend on Play 2.5.3 which in turn requires Java 8.
+with Elasticsearch 2.4.0 and it will not work with Elasticsearch other
+than 2.2.X. Moreover, we depend on Play 2.5.9 which in turn requires Java 8.
 
 ### 1. Installation
 
 
 Add the dependency to your `build.sbt`:
 
-	libraryDependencies += "com.evojam" %% "play-elastic4s" % "0.3.1-SNAPSHOT"
+	libraryDependencies += "com.evojam" %% "play-elastic4s" % "0.3.2-SNAPSHOT"
 
 	resolvers += Resolver.sonatypeRepo("snapshots")
 
