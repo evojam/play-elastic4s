@@ -23,7 +23,7 @@ than 2.2.X. Moreover, we depend on Play 2.5.9 which in turn requires Java 8.
 
 Add the dependency to your `build.sbt`:
 
-	libraryDependencies += "com.evojam" %% "play-elastic4s" % "0.3.2-SNAPSHOT"
+	libraryDependencies += "com.evojam" %% "play-elastic4s" % "0.3.2"
 
 	resolvers += Resolver.sonatypeRepo("snapshots")
 
