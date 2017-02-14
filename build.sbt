@@ -31,12 +31,16 @@ resolvers ++= Seq(
 	"scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 )
 
-val PlayVersion = "2.5.9"
+val PlayVersion = "2.5.12"
+val Elastic4sVersion = "5.2.5"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" % "play_2.11" % PlayVersion,
   "com.typesafe.play" % "play-json_2.11" % PlayVersion,
-  "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.4.0",
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % Elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-tcp" % Elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-embedded" % Elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-play-json" % Elastic4sVersion,
   "com.typesafe.play" %% "play-specs2" % PlayVersion % Test,
   "org.specs2" %% "specs2-scalacheck" % "3.6" % Test
 )

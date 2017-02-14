@@ -20,13 +20,24 @@ than 2.2.X. Moreover, we depend on Play 2.5.9 which in turn requires Java 8.
 
 ### 1. Installation
 
-
 Add the dependency to your `build.sbt`:
 
 	libraryDependencies += "com.evojam" %% "play-elastic4s" % "0.3.2"
 
 	resolvers += Resolver.sonatypeRepo("snapshots")
 
+
+#### Play 2.5.x compatibility note
+
+Due to the difference in underlying Netty version (4.1.x in ES client and 4.0.x in Play)
+that are binary incompatible you have to use Akka transport. Please ensure you have
+appropriate plugins' setup in your `build.sbt`:
+
+```
+enablePlugins(PlayScala, PlayAkkaHttpServer)
+
+disablePlugins(PlayNettyServer)
+```
 
 ### 2. Setup
 
@@ -52,13 +63,11 @@ elastic4s {
 play.modules.enabled += "com.evojam.play.elastic4s.Elastic4sModule"
 ```
 
-You may define any number of clusters. Each of them needs to have `type` which
-is set either to `"node"` or `"transport"`. This field determines whether an
-embedded client or transport client will be created. Also, each cluster needs to
-have `cluster.name` set. Transport clients require an extra `uri` field with
-elasticsearch uri. Any other fields will be passed to Elasticsearch Java driver
-settings builder. Please refer to [Java Client docs], paying attention to [Node
-Client docs] and [Transport Client docs].
+You may define any number of clusters. Transport clients require an `uri` field with elasticsearch
+uri. This field determines whether an embedded client or transport client will be created. If the `uri` field
+is present Transport client will be used, embedded client otherwise. Also, each cluster needs to
+have `cluster.name` set. Any other fields will be passed to  Elasticsearch Java driver settings
+builder. Please refer to [Java Client docs], paying attention to [Node Client docs] and [Transport Client docs].
 
   [Java Client docs]: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/client.html
   [Node Client docs]: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/node-client.html

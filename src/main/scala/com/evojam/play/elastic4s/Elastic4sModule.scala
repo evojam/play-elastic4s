@@ -50,6 +50,10 @@ class Elastic4sModule extends Module {
 
     val optDefaultBinding = Option(clustersSetup).filter(_.size == 1).map(t => defaultBinding(t.head._2))
 
+    logger.debug(
+      s"Provide bindings for ES configuration, cluster setup, type bindings and default ES client ${optDefaultBinding}"
+    )
+
     factoryBindings ++ namedBindings(clustersSetup) ++ optDefaultBinding ++ idxTypeBindings
   }
 }
